@@ -1,4 +1,9 @@
-# noinspection PyPackageRequirements
+﻿# noinspection PyPackageRequirements
+from gino.api import Gino as _Gino
+from gino.api import GinoExecutor as _Executor
+from gino.engine import GinoConnection as _Connection
+from gino.engine import GinoEngine as _Engine
+from gino.strategies import GinoStrategy
 from sqlalchemy.engine.url import URL
 
 # noinspection PyPackageRequirements
@@ -10,10 +15,6 @@ from starlette.exceptions import HTTPException
 # noinspection PyPackageRequirements
 from starlette.types import Message, Receive, Scope, Send
 
-from ..api import Gino as _Gino, GinoExecutor as _Executor
-from ..engine import GinoConnection as _Connection, GinoEngine as _Engine
-from ..strategies import GinoStrategy
-
 
 class StarletteModelMixin:
     @classmethod
@@ -22,7 +23,8 @@ class StarletteModelMixin:
         rv = await cls.get(*args, **kwargs)
         if rv is None:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND, "{} is not found".format(cls.__name__)
+                status.HTTP_404_NOT_FOUND,
+                "{} is not found".format(cls.__name__),
             )
         return rv
 
@@ -69,8 +71,13 @@ class _Middleware:
         self.app = app
         self.db = db
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] == "http" and self.db.config["use_connection_for_request"]:
+    async def __call__(
+        self, scope: Scope, receive: Receive, send: Send
+    ) -> None:
+        if (
+            scope["type"] == "http"
+            and self.db.config["use_connection_for_request"]
+        ):
             scope["connection"] = await self.db.acquire(lazy=True)
             try:
                 await self.app(scope, receive, send)
