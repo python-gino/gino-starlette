@@ -1,5 +1,7 @@
 # gino-starlette
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0bec53f18d3b49aea6f558a269df318a)](https://app.codacy.com/gh/python-gino/gino-starlette?utm_source=github.com&utm_medium=referral&utm_content=python-gino/gino-starlette&utm_campaign=Badge_Grade_Settings)
+
 ## Introduction
 
 An extension for GINO to support starlette server.
