@@ -1,4 +1,4 @@
-﻿# gino-starlette
+# gino-starlette
 
 ## Introduction
 
