@@ -52,10 +52,10 @@ jobs:
       if: matrix.python-version >= '3.6'
       run: |
           $HOME/.poetry/bin/poetry run black --check gino
-    # - name: Submit coverage report
-    #   if: matrix.python-version == '3.8' && matrix.postgres-version == '12.1'
-    #   env:
-    #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_TOKEN }}
-    #   run: |
-    #     pip install codacy-coverage
-    #     python-codacy-coverage -r coverage.xml
+    - name: Submit coverage report
+      if: matrix.python-version == '3.8' && matrix.postgres-version == '12.1'
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_TOKEN }}
+      run: |
+        pip install codacy-coverage
+        python-codacy-coverage -r coverage.xml
