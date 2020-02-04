@@ -1,4 +1,4 @@
-﻿# noinspection PyPackageRequirements
+# noinspection PyPackageRequirements
 from gino.api import Gino as _Gino
 from gino.api import GinoExecutor as _Executor
 from gino.engine import GinoConnection as _Connection
