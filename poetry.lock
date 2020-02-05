@@ -129,6 +129,7 @@ toml = ["toml"]
 [[package]]
 category = "main"
 description = ""
+develop = true
 name = "gino"
 optional = false
 python-versions = "^3.5"
@@ -147,9 +148,10 @@ python = "<3.8"
 version = "^1.3.0"
 
 [package.source]
-reference = "326231057dd4b786667c181d20f6dfc52e492dc4"
-type = "git"
-url = "https://github.com/python-gino/gino.git"
+reference = ""
+type = "directory"
+url = "/e/Repos/gino"
+
 [[package]]
 category = "dev"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -421,14 +423,14 @@ marker = "python_version < \"3.8\""
 name = "zipp"
 optional = false
 python-versions = ">=3.6"
-version = "2.1.0"
+version = "2.2.0"
 
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools"]
 
 [metadata]
-content-hash = "345e4b1a96a8f425f37dd36f1739d2c6f57a3569db0fdf2e18f5bcfd0668e1ee"
+content-hash = "d8abca46febe83f641450c883bf1b5b1a7be98b942c01695d8134136c9d904d1"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -669,6 +671,6 @@ wcwidth = [
     {file = "wcwidth-0.1.8.tar.gz", hash = "sha256:f28b3e8a6483e5d49e7f8949ac1a78314e740333ae305b4ba5defd3e74fb37a8"},
 ]
 zipp = [
-    {file = "zipp-2.1.0-py3-none-any.whl", hash = "sha256:ccc94ed0909b58ffe34430ea5451f07bc0c76467d7081619a454bf5c98b89e28"},
-    {file = "zipp-2.1.0.tar.gz", hash = "sha256:feae2f18633c32fc71f2de629bfb3bd3c9325cd4419642b1f1da42ee488d9b98"},
+    {file = "zipp-2.2.0-py36-none-any.whl", hash = "sha256:d65287feb793213ffe11c0f31b81602be31448f38aeb8ffc2eb286c4f6f6657e"},
+    {file = "zipp-2.2.0.tar.gz", hash = "sha256:5c56e330306215cd3553342cfafc73dda2c60792384117893f3a83f8a1209f50"},
 ]
