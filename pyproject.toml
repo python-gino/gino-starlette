@@ -3,8 +3,8 @@ name = "gino-starlette"
 version = "0.1.0-alpha"
 description = "An extension for GINO to integrate with Starlette"
 license = "BSD-3-Clause"
-authors = ["Fantix King <fantix.king@gmail.com>"]
-maintainers = ["Tony Wang <wwwjfy@gmail.com>", "Fantix King <fantix.king@gmail.com>", "Aobo Shi <shiaobo8@gmail.com>"]
+authors = ["Tony Wang <wwwjfy@gmail.com>"]
+maintainers = ["Aobo Shi <shiaobo8@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/python-gino/gino-starlette"
 repository = "https://github.com/python-gino/gino-starlette"
@@ -28,12 +28,13 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.6"
 starlette = "^0.13.1"
-gino = "^0.8.5"
-black = "^19.10b0"
+gino =  { git = "https://github.com/python-gino/gino.git" }
+
 
 
 [tool.poetry.dev-dependencies]
 async_generator = "^1.10"
+black = "^19.10b0"
 
 # tests
 pytest = "^5.3.2"

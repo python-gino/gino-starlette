@@ -1,15 +1,24 @@
-* GINO version:
-* Python version:
-* starlette version:
+## Expected Behavior
 
-### Description
+Describe what you were trying to get done and what you expected to happen.
 
-Describe what you were trying to get done.
-Tell us what happened, what went wrong, and what you expected to happen.
+## Actual Behavior
 
-### What I Did
+Tell us what happened, what went wrong,
 
-```
+## Steps to Reproduce the Problem
+
+  1.  
+  2.  
+  3.  
+
+```plaintext
 Paste the command(s) you ran and the output.
 If there was a crash, please include the traceback here.
 ```
+
+## Specifications
+
+* Python version:
+* GINO version:
+* Starlette version:
