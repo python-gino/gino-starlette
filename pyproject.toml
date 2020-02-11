@@ -21,11 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
 ]
 
-
-
 [tool.poetry.dependencies]
 python = "^3.6"
-starlette = "^0.13.1"
+starlette = "*"
 gino =  { git = "https://github.com/python-gino/gino.git" }
 
 [tool.poetry.dev-dependencies]

@@ -129,7 +129,6 @@ toml = ["toml"]
 [[package]]
 category = "main"
 description = ""
-develop = true
 name = "gino"
 optional = false
 python-versions = "^3.5"
@@ -148,10 +147,9 @@ python = "<3.8"
 version = "^1.3.0"
 
 [package.source]
-reference = ""
-type = "directory"
-url = "/e/Repos/gino"
-
+reference = "0891261d3307b417c7ba45b74e28efd5d863ecfe"
+type = "git"
+url = "https://github.com/python-gino/gino.git"
 [[package]]
 category = "dev"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -430,7 +428,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools"]
 
 [metadata]
-content-hash = "d8abca46febe83f641450c883bf1b5b1a7be98b942c01695d8134136c9d904d1"
+content-hash = "ac7111632f8a8e0a441acadb6228e8e2e11eece0ce7bfe9f006dd69d99de7b01"
 python-versions = "^3.6"
 
 [metadata.files]

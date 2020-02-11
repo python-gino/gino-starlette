@@ -33,7 +33,7 @@ class User(db.Model):
     nickname = db.Column(db.Unicode(), default="unnamed")
 
 
-# Definition of routes
+# Definition of resources
 @app.get("/")
 async def index():
     return {"message": "Hello, world!"}
@@ -51,6 +51,8 @@ async def add_user(nickname: str):
     return u.to_dict()
 
 
+# Using event hook
+@app.on_event("startup")
 async def create():
     await db.set_bind(PG_URL)
     await db.gino.create_all()
@@ -58,5 +60,4 @@ async def create():
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(create())
     uvicorn.run(app, host="127.0.0.1", port=5000)
