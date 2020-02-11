@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  gino-starlette:
+    image: gino-starlette
+    build: .
+    ports:
+      - 8000:8000
