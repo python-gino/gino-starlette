@@ -24,7 +24,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.6"
 starlette = "*"
-gino =  { git = "https://github.com/python-gino/gino.git" }
+gino = { git = "https://github.com/python-gino/gino.git" }
 
 [tool.poetry.dev-dependencies]
 async_generator = "^1.10"
@@ -37,7 +37,7 @@ pytest-mock = "^1.13.0"
 pytest-cov = "^2.8.1"
 requests = "^2.22.0"
 
-[tool.poetry.plugins."gino.extension"]
+[tool.poetry.plugins."gino.extensions"]
 "starlette" = "gino_starlette"
 
 [build-system]
