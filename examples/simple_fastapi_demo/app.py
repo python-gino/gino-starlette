@@ -17,7 +17,7 @@ PG_URL = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
     **DB_ARGS
 )
 
-# Initialize Starlette app
+# Initialize FastAPI app
 app = FastAPI()
 
 # Initialize Gino object
