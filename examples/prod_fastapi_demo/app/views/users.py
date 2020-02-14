@@ -2,11 +2,6 @@ from main import app
 from models.users import User
 
 
-@app.get("/")
-async def index():
-    return {"message": "Hello, world!"}
-
-
 @app.get("/users/{uid}")
 async def get_user(uid: int):
     q = User.query.where(User.id == uid)

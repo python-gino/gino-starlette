@@ -21,7 +21,11 @@ from config import BaseConfig
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-from main import db as target_metadata
+from main import db
+from models import import_models
+
+import_models()
+target_metadata = db
 
 
 # this is the Alembic Config object, which provides
