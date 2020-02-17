@@ -32,6 +32,8 @@ The config includes:
 | `password`                   | database server password                                                                                          | empty       |
 | `database`                   | database name                                                                                                     | `postgres`  |
 | `dsn`                        | a SQLAlchemy database URL to create the engine, its existence will replace all previous connect arguments.        | N/A         |
+| `retry_times`                | the retry times when database failed to connect                                                                   | `20`        |
+| `retry_interval`             | the interval in **seconds** between each time of retry                                                                | `5`         |
 | `pool_min_size`              | the initial number of connections of the db pool.                                                                 | N/A         |
 | `pool_max_size`              | the maximum number of connections in the db pool.                                                                 | N/A         |
 | `echo`                       | enable SQLAlchemy echo mode.                                                                                      | N/A         |

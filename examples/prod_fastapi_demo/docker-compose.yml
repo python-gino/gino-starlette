@@ -1,0 +1,26 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "8000:80"
+    depends_on:
+      - migration
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+    command: uvicorn --host 0.0.0.0 --port 80 main:app --reload
+  migration:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+    command: alembic upgrade head
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=gino
+      - POSTGRES_HOST_AUTH_METHOD=trust

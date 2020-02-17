@@ -1,9 +1,8 @@
 # noinspection PyPackageRequirements
-from gino.api import Gino as _Gino
-from gino.api import GinoExecutor as _Executor
-from gino.engine import GinoConnection as _Connection
-from gino.engine import GinoEngine as _Engine
-from gino.strategies import GinoStrategy
+import asyncio
+import logging
+
+import click
 from sqlalchemy.engine.url import URL
 
 # noinspection PyPackageRequirements
@@ -14,6 +13,14 @@ from starlette.exceptions import HTTPException
 
 # noinspection PyPackageRequirements
 from starlette.types import Message, Receive, Scope, Send
+
+from gino.api import Gino as _Gino
+from gino.api import GinoExecutor as _Executor
+from gino.engine import GinoConnection as _Connection
+from gino.engine import GinoEngine as _Engine
+from gino.strategies import GinoStrategy
+
+logger = logging.getLogger("gino.ext.starlette")
 
 
 class StarletteModelMixin:
@@ -100,8 +107,24 @@ class _Middleware:
                         ssl=self.db.config["ssl"],
                         **self.db.config["kwargs"],
                     )
+                    msg = "Database connected: "
+                    logger.info(
+                        msg + format_engine(self.db.bind),
+                        extra={
+                            "color_message": msg
+                            + format_engine(self.db.bind, color=True)
+                        },
+                    )
                 elif message["type"] == "lifespan.shutdown":
                     await self.db.pop_bind().close()
+                    msg = "Closed database connection: "
+                    logger.info(
+                        msg + format_engine(self.db.bind),
+                        extra={
+                            "color_message": msg
+                            + format_engine(self.db.bind, color=True)
+                        },
+                    )
                 return message
 
             await self.app(scope, receiver, send)
@@ -170,6 +193,8 @@ class Gino(_Gino):
                 password=kwargs.pop("password", ""),
                 database=kwargs.pop("database", "postgres"),
             )
+        self.config["retry_times"] = kwargs.pop("retry_times", 5)
+        self.config["retry_interval"] = kwargs.pop("retry_interval", 5)
         self.config["echo"] = kwargs.pop("echo", False)
         self.config["min_size"] = kwargs.pop("pool_min_size", 5)
         self.config["max_size"] = kwargs.pop("pool_max_size", 10)
@@ -194,4 +219,67 @@ class Gino(_Gino):
 
     async def set_bind(self, bind, loop=None, **kwargs):
         kwargs.setdefault("strategy", "starlette")
-        return await super().set_bind(bind, loop=loop, **kwargs)
+        for retries in range(self.config["retry_times"]):
+            try:
+                if retries == 0:
+                    logger.info("Connecting to database...")
+                else:
+                    logger.info("Retrying to connect to database...")
+                _bind = await super().set_bind(bind, loop=loop, **kwargs)
+                return _bind
+            except ConnectionError:
+                logger.info(
+                    f"Waiting {self.config['retry_interval']}s to reconnect..."
+                )
+                await asyncio.sleep(self.config["retry_interval"])
+        logger.error("Max retries reached.")
+        raise ConnectionError("Database connection error!")
+
+
+def format_engine(engine, color=False):
+    if color:
+        return "<{classname} max={max} min={min} cur={cur} use={use}>".format(
+            classname=click.style(
+                engine.raw_pool.__class__.__module__
+                + "."
+                + engine.raw_pool.__class__.__name__,
+                fg="green",
+            ),
+            max=click.style(repr(engine.raw_pool._maxsize), fg="cyan"),
+            min=click.style(repr(engine.raw_pool._minsize), fg="cyan"),
+            cur=click.style(
+                repr(
+                    len(
+                        [
+                            0
+                            for con in engine.raw_pool._holders
+                            if con._con and not con._con.is_closed()
+                        ]
+                    )
+                ),
+                fg="cyan",
+            ),
+            use=click.style(
+                repr(
+                    len([0 for con in engine.raw_pool._holders if con._in_use])
+                ),
+                fg="cyan",
+            ),
+        )
+    else:
+        # noinspection PyProtectedMember
+        return "<{classname} max={max} min={min} cur={cur} use={use}>".format(
+            classname=engine.raw_pool.__class__.__module__
+            + "."
+            + engine.raw_pool.__class__.__name__,
+            max=engine.raw_pool._maxsize,
+            min=engine.raw_pool._minsize,
+            cur=len(
+                [
+                    0
+                    for con in engine.raw_pool._holders
+                    if con._con and not con._con.is_closed()
+                ]
+            ),
+            use=len([0 for con in engine.raw_pool._holders if con._in_use]),
+        )
