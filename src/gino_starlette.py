@@ -116,13 +116,22 @@ class _Middleware:
                         },
                     )
                 elif message["type"] == "lifespan.shutdown":
-                    await self.db.pop_bind().close()
-                    msg = "Closed database connection: "
+                    msg = "Closing database connection: "
                     logger.info(
                         msg + format_engine(self.db.bind),
                         extra={
                             "color_message": msg
                             + format_engine(self.db.bind, color=True)
+                        },
+                    )
+                    _bind = self.db.pop_bind()
+                    await _bind.close()
+                    msg = "Closed database connection: "
+                    logger.info(
+                        msg + format_engine(_bind),
+                        extra={
+                            "color_message": msg
+                            + format_engine(_bind, color=True)
                         },
                     )
                 return message
@@ -225,8 +234,7 @@ class Gino(_Gino):
                     logger.info("Connecting to database...")
                 else:
                     logger.info("Retrying to connect to database...")
-                _bind = await super().set_bind(bind, loop=loop, **kwargs)
-                return _bind
+                return await super().set_bind(bind, loop=loop, **kwargs)
             except ConnectionError:
                 logger.info(
                     f"Waiting {self.config['retry_interval']}s to reconnect..."
