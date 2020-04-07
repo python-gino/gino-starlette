@@ -1,15 +1,15 @@
-FROM tiangolo/uvicorn-gunicorn:python3.7-alpine3.8
+FROM python:3.8-alpine as base
 
-RUN sed -i 's/http:\/\/dl-cdn.alpinelinux.org/https:\/\/mirrors.aliyun.com/g' /etc/apk/repositories
-ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple
-RUN apk update && apk add gcc libffi-dev g++ postgresql-dev make git
-RUN pip install -U pip
-RUN pip install poetry
+FROM base as builder
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev make postgresql-dev
+RUN pip install poetry==1.0.3
+COPY . /src/
+WORKDIR /src
+RUN python -m venv /env && . /env/bin/activate && poetry install
 
-WORKDIR /app
-COPY poetry.lock pyproject.toml ./
-RUN poetry config virtualenvs.create false && poetry install
-
-COPY app ./
-
-RUN apk del libffi-dev g++ make
+FROM base
+RUN apk add --no-cache postgresql-libs
+COPY --from=builder /env /env
+COPY --from=builder /src /src
+WORKDIR /src
+CMD ["/env/bin/gunicorn", "gino_fastapi_demo.asgi:app", "-b", "0.0.0.0:80", "-k", "uvicorn.workers.UvicornWorker"]

@@ -1,3 +1,6 @@
+import asyncio
+
+import pytest
 from starlette.testclient import TestClient
 
 
@@ -48,3 +51,18 @@ def test_dsn(app_dsn):
 
 def test_app_factory(app_factory):
     _test(app_factory)
+
+
+def test_db_delayed(app_db_delayed):
+    loop = asyncio.get_event_loop()
+    loop.call_later(1, loop.create_task, app_db_delayed.start_proxy())
+    client = TestClient(app_db_delayed)
+    with client:
+        pass
+
+
+def test_no_db(app_db_delayed):
+    client = TestClient(app_db_delayed)
+    with pytest.raises(Exception):
+        with client:
+            pass

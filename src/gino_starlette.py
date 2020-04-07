@@ -1,24 +1,15 @@
-# noinspection PyPackageRequirements
 import asyncio
 import logging
-
-import click
-from sqlalchemy.engine.url import URL
-
-# noinspection PyPackageRequirements
-from starlette import status
-
-# noinspection PyPackageRequirements
-from starlette.exceptions import HTTPException
-
-# noinspection PyPackageRequirements
-from starlette.types import Message, Receive, Scope, Send
 
 from gino.api import Gino as _Gino
 from gino.api import GinoExecutor as _Executor
 from gino.engine import GinoConnection as _Connection
 from gino.engine import GinoEngine as _Engine
 from gino.strategies import GinoStrategy
+from sqlalchemy.engine.url import make_url, URL
+from starlette import status
+from starlette.exceptions import HTTPException
+from starlette.types import Receive, Scope, Send
 
 logger = logging.getLogger("gino.ext.starlette")
 
@@ -77,14 +68,12 @@ class _Middleware:
     def __init__(self, app, db):
         self.app = app
         self.db = db
+        self._conn_for_req = db.config["use_connection_for_request"]
 
     async def __call__(
         self, scope: Scope, receive: Receive, send: Send
     ) -> None:
-        if (
-            scope["type"] == "http"
-            and self.db.config["use_connection_for_request"]
-        ):
+        if scope["type"] == "http" and self._conn_for_req:
             scope["connection"] = await self.db.acquire(lazy=True)
             try:
                 await self.app(scope, receive, send)
@@ -92,51 +81,6 @@ class _Middleware:
                 conn = scope.pop("connection", None)
                 if conn is not None:
                     await conn.release()
-            return
-
-        if scope["type"] == "lifespan":
-
-            async def receiver() -> Message:
-                message = await receive()
-                if message["type"] == "lifespan.startup":
-                    await self.db.set_bind(
-                        self.db.config["dsn"],
-                        echo=self.db.config["echo"],
-                        min_size=self.db.config["min_size"],
-                        max_size=self.db.config["max_size"],
-                        ssl=self.db.config["ssl"],
-                        **self.db.config["kwargs"],
-                    )
-                    msg = "Database connected: "
-                    logger.info(
-                        msg + format_engine(self.db.bind),
-                        extra={
-                            "color_message": msg
-                            + format_engine(self.db.bind, color=True)
-                        },
-                    )
-                elif message["type"] == "lifespan.shutdown":
-                    msg = "Closing database connection: "
-                    logger.info(
-                        msg + format_engine(self.db.bind),
-                        extra={
-                            "color_message": msg
-                            + format_engine(self.db.bind, color=True)
-                        },
-                    )
-                    _bind = self.db.pop_bind()
-                    await _bind.close()
-                    msg = "Closed database connection: "
-                    logger.info(
-                        msg + format_engine(_bind),
-                        extra={
-                            "color_message": msg
-                            + format_engine(_bind, color=True)
-                        },
-                    )
-                return message
-
-            await self.app(scope, receiver, send)
             return
 
         await self.app(scope, receive, send)
@@ -172,6 +116,9 @@ class Gino(_Gino):
     * ``ssl`` - SSL context passed to ``asyncpg.connect``, default is ``None``.
     * ``use_connection_for_request`` - flag to set up lazy connection for
       requests.
+    * ``retry_limit`` - the number of retries to connect to the database on
+      start up, default is 1.
+    * ``retry_interval`` - seconds to wait between retries, default is 1.
     * ``kwargs`` - other parameters passed to the specified dialects,
       like ``asyncpg``. Unrecognized parameters will cause exceptions.
 
@@ -192,7 +139,7 @@ class Gino(_Gino):
     def __init__(self, app=None, *args, **kwargs):
         self.config = dict()
         if "dsn" in kwargs:
-            self.config["dsn"] = kwargs.pop("dsn")
+            self.config["dsn"] = make_url(kwargs.pop("dsn"))
         else:
             self.config["dsn"] = URL(
                 drivername=kwargs.pop("driver", "asyncpg"),
@@ -202,8 +149,8 @@ class Gino(_Gino):
                 password=kwargs.pop("password", ""),
                 database=kwargs.pop("database", "postgres"),
             )
-        self.config["retry_times"] = kwargs.pop("retry_times", 5)
-        self.config["retry_interval"] = kwargs.pop("retry_interval", 5)
+        self.config["retry_limit"] = kwargs.pop("retry_limit", 1)
+        self.config["retry_interval"] = kwargs.pop("retry_interval", 1)
         self.config["echo"] = kwargs.pop("echo", False)
         self.config["min_size"] = kwargs.pop("pool_min_size", 5)
         self.config["max_size"] = kwargs.pop("pool_max_size", 10)
@@ -218,6 +165,54 @@ class Gino(_Gino):
             self.init_app(app)
 
     def init_app(self, app):
+        @app.on_event("startup")
+        async def startup():
+            config = self.config
+            logger.info("Connecting to the database: %r", config["dsn"])
+            retries = 0
+            while True:
+                retries += 1
+                # noinspection PyBroadException
+                try:
+                    await self.set_bind(
+                        config["dsn"],
+                        echo=config["echo"],
+                        min_size=config["min_size"],
+                        max_size=config["max_size"],
+                        ssl=config["ssl"],
+                        **config["kwargs"],
+                    )
+                    break
+                except Exception:
+                    if retries < config["retry_limit"]:
+                        logger.info("Waiting for the database to start...")
+                        await asyncio.sleep(config["retry_interval"])
+                    else:
+                        logger.error(
+                            "Cannot connect to the database; max retries reached."
+                        )
+                        raise
+            msg = "Database connection pool created: "
+            logger.info(
+                msg + repr(self.bind),
+                extra={"color_message": msg + self.bind.repr(color=True)},
+            )
+
+        @app.on_event("shutdown")
+        async def shutdown():
+            msg = "Closing database connection: "
+            logger.info(
+                msg + repr(self.bind),
+                extra={"color_message": msg + self.bind.repr(color=True)},
+            )
+            _bind = self.pop_bind()
+            await _bind.close()
+            msg = "Closed database connection: "
+            logger.info(
+                msg + repr(_bind),
+                extra={"color_message": msg + _bind.repr(color=True)},
+            )
+
         app.add_middleware(_Middleware, db=self)
 
     async def first_or_404(self, *args, **kwargs):
@@ -228,66 +223,4 @@ class Gino(_Gino):
 
     async def set_bind(self, bind, loop=None, **kwargs):
         kwargs.setdefault("strategy", "starlette")
-        for retries in range(self.config["retry_times"]):
-            try:
-                if retries == 0:
-                    logger.info("Connecting to database...")
-                else:
-                    logger.info("Retrying to connect to database...")
-                return await super().set_bind(bind, loop=loop, **kwargs)
-            except ConnectionError:
-                logger.info(
-                    f"Waiting {self.config['retry_interval']}s to reconnect..."
-                )
-                await asyncio.sleep(self.config["retry_interval"])
-        logger.error("Max retries reached.")
-        raise ConnectionError("Database connection error!")
-
-
-def format_engine(engine, color=False):
-    if color:
-        return "<{classname} max={max} min={min} cur={cur} use={use}>".format(
-            classname=click.style(
-                engine.raw_pool.__class__.__module__
-                + "."
-                + engine.raw_pool.__class__.__name__,
-                fg="green",
-            ),
-            max=click.style(repr(engine.raw_pool._maxsize), fg="cyan"),
-            min=click.style(repr(engine.raw_pool._minsize), fg="cyan"),
-            cur=click.style(
-                repr(
-                    len(
-                        [
-                            0
-                            for con in engine.raw_pool._holders
-                            if con._con and not con._con.is_closed()
-                        ]
-                    )
-                ),
-                fg="cyan",
-            ),
-            use=click.style(
-                repr(
-                    len([0 for con in engine.raw_pool._holders if con._in_use])
-                ),
-                fg="cyan",
-            ),
-        )
-    else:
-        # noinspection PyProtectedMember
-        return "<{classname} max={max} min={min} cur={cur} use={use}>".format(
-            classname=engine.raw_pool.__class__.__module__
-            + "."
-            + engine.raw_pool.__class__.__name__,
-            max=engine.raw_pool._maxsize,
-            min=engine.raw_pool._minsize,
-            cur=len(
-                [
-                    0
-                    for con in engine.raw_pool._holders
-                    if con._con and not con._con.is_closed()
-                ]
-            ),
-            use=len([0 for con in engine.raw_pool._holders if con._in_use]),
-        )
+        return await super().set_bind(bind, loop=loop, **kwargs)

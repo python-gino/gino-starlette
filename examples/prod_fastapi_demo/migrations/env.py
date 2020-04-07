@@ -5,8 +5,9 @@ import time
 from logging.config import fileConfig
 
 from alembic import context
+from gino_fastapi_demo.config import DB_DSN, DB_RETRY_LIMIT, DB_RETRY_INTERVAL
+from gino_fastapi_demo.main import get_app, db
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.engine.url import URL
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -14,19 +15,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-from config import BaseConfig
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-# target_metadata = None
-from main import db
-from models import import_models
-
-import_models()
+get_app()
 target_metadata = db
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -36,19 +27,8 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-
 config.set_main_option(
-    "sqlalchemy.url",
-    str(
-        URL(
-            drivername="postgresql",
-            host=BaseConfig.DB_HOST,
-            port=int(BaseConfig.DB_PORT),
-            username=BaseConfig.DB_USER,
-            password=BaseConfig.DB_PASS,
-            database=BaseConfig.DB_NAME,
-        )
-    ),
+    "sqlalchemy.url", str(DB_DSN),
 )
 
 
@@ -95,9 +75,9 @@ def run_migrations_online():
             retries += 1
             connection = connectable.connect()
         except Exception:
-            if retries < BaseConfig.DB_CONNECT_RETRIES:
+            if retries < DB_RETRY_LIMIT:
                 logging.info("Waiting for the database to start...")
-                time.sleep(3)
+                time.sleep(DB_RETRY_INTERVAL)
             else:
                 logging.error("Max retries reached.")
                 raise

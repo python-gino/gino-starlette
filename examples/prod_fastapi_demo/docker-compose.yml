@@ -4,23 +4,27 @@ services:
     build: .
     ports:
       - "8000:80"
+    volumes:
+      - .:/src
     depends_on:
       - migration
     environment:
       - DB_HOST=db
-      - DB_USER=postgres
-    command: uvicorn --host 0.0.0.0 --port 80 main:app --reload
+      - DB_USER=gino
+    command: /env/bin/uvicorn --host 0.0.0.0 --port 80 gino_fastapi_demo.asgi:app --reload
   migration:
     build: .
+    volumes:
+      - .:/src
     depends_on:
       - db
     environment:
       - DB_HOST=db
-      - DB_USER=postgres
-    command: alembic upgrade head
+      - DB_USER=gino
+    command: /env/bin/alembic upgrade head
   db:
     image: postgres
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=gino
-      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=gino
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

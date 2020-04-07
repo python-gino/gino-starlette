@@ -1,35 +1,28 @@
-import asyncio
 import os
 
-import uvicorn
+from gino.ext.starlette import Gino
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse
 
-from gino.ext.starlette import Gino
-
 # Database Configuration
-DB_ARGS = dict(
+PG_URL = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
     host=os.getenv("DB_HOST", "localhost"),
     port=os.getenv("DB_PORT", 5432),
     user=os.getenv("DB_USER", "postgres"),
     password=os.getenv("DB_PASS", ""),
     database=os.getenv("DB_NAME", "postgres"),
 )
-PG_URL = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
-    **DB_ARGS
-)
 
 # Initialize Starlette app
 app = Starlette()
 
-# Initialize Gino object
-db = Gino(dsn=PG_URL)
-db.init_app(app)
+# Initialize Gino instance
+db = Gino(app, dsn=PG_URL)
 
 
 # Definition of table
 class User(db.Model):
-    __tablename__ = "gino_users"
+    __tablename__ = "simple_starlette_demo_users"
 
     id = db.Column(db.BigInteger(), primary_key=True)
     nickname = db.Column(db.Unicode(), default="unnamed")
@@ -54,12 +47,16 @@ async def add_user(request):
     return JSONResponse(u.to_dict())
 
 
+@app.on_event("startup")
 async def create():
-    await db.set_bind(PG_URL)
     await db.gino.create_all()
-    await db.pop_bind().close()
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(create())
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host=os.getenv("APP_HOST", "127.0.0.1"),
+        port=int(os.getenv("APP_PORT", "5000")),
+    )

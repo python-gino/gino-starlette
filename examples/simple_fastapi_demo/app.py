@@ -1,39 +1,31 @@
-import asyncio
 import os
 
-import uvicorn
 from fastapi import FastAPI
 from gino.ext.starlette import Gino
+from pydantic import BaseModel
 
-# Database Configuration
-DB_ARGS = dict(
+app = FastAPI()
+db = Gino(
+    app,
     host=os.getenv("DB_HOST", "localhost"),
     port=os.getenv("DB_PORT", 5432),
     user=os.getenv("DB_USER", "postgres"),
     password=os.getenv("DB_PASS", ""),
-    database=os.getenv("DB_NAME", "gino"),
-)
-PG_URL = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
-    **DB_ARGS
+    database=os.getenv("DB_NAME", "postgres"),
 )
 
-# Initialize FastAPI app
-app = FastAPI()
 
-# Initialize Gino object
-db = Gino(dsn=PG_URL)
-db.init_app(app)
-
-
-# Definition of table
 class User(db.Model):
-    __tablename__ = "gino_users"
+    __tablename__ = "simple_fastapi_demo_users"
 
     id = db.Column(db.BigInteger(), primary_key=True)
     nickname = db.Column(db.Unicode(), default="unnamed")
 
 
-# Definition of resources
+class UserModel(BaseModel):
+    name: str
+
+
 @app.get("/")
 async def index():
     return {"message": "Hello, world!"}
@@ -46,18 +38,21 @@ async def get_user(uid: int):
 
 
 @app.post("/users")
-async def add_user(nickname: str):
-    u = await User.create(nickname=nickname)
+async def add_user(user: UserModel):
+    u = await User.create(nickname=user.name)
     return u.to_dict()
 
 
-# Using event hook
 @app.on_event("startup")
 async def create():
-    await db.set_bind(PG_URL)
     await db.gino.create_all()
-    await db.pop_bind().close()
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host=os.getenv("APP_HOST", "127.0.0.1"),
+        port=int(os.getenv("APP_PORT", "5000")),
+    )
