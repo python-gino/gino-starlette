@@ -1,6 +1,6 @@
 import logging
-import click
 
+import click
 from fastapi import FastAPI
 
 from .models import db
@@ -14,8 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_app():
-    app = FastAPI()
+    app = FastAPI(title="GINO FastAPI Demo")
     db.init_app(app)
+    load_modules(app)
+    return app
+
+
+def load_modules(app=None):
     for ep in entry_points()["gino_fastapi_demo.modules"]:
         logger.info(
             "Loading module: %s",
@@ -26,7 +31,7 @@ def get_app():
             },
         )
         mod = ep.load()
-        init_app = getattr(mod, "init_app", None)
-        if init_app:
-            init_app(app)
-    return app
+        if app:
+            init_app = getattr(mod, "init_app", None)
+            if init_app:
+                init_app(app)

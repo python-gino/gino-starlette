@@ -2,11 +2,15 @@ import uuid
 
 
 def test_crud(client):
-    assert client.get("/users/1").status_code == 404
+    # create
     nickname = str(uuid.uuid4())
     r = client.post("/users", json=dict(name=nickname))
     r.raise_for_status()
-    r = r.json()
-    assert (
-        client.get("/users/{}".format(r["id"])).json()["nickname"] == nickname
-    )
+
+    # retrieve
+    url = "/users/{}".format(r.json()['id'])
+    assert client.get(url).json()["nickname"] == nickname
+
+    # delete
+    client.delete(url).raise_for_status()
+    assert client.get(url).status_code == 404

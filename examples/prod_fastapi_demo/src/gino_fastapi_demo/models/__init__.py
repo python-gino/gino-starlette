@@ -1,4 +1,4 @@
-from gino_starlette import Gino
+from gino.ext.starlette import Gino
 
 from .. import config
 

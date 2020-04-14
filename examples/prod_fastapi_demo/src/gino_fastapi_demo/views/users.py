@@ -12,14 +12,21 @@ class UserModel(BaseModel):
 
 @router.get("/users/{uid}")
 async def get_user(uid: int):
-    q = User.query.where(User.id == uid)
-    return (await q.gino.first_or_404()).to_dict()
+    user = await User.get_or_404(uid)
+    return user.to_dict()
 
 
 @router.post("/users")
 async def add_user(user: UserModel):
-    u = await User.create(nickname=user.name)
-    return u.to_dict()
+    rv = await User.create(nickname=user.name)
+    return rv.to_dict()
+
+
+@router.delete("/users/{uid}")
+async def delete_user(uid: int):
+    user = await User.get_or_404(uid)
+    await user.delete()
+    return dict(id=uid)
 
 
 def init_app(app):
