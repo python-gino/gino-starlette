@@ -8,7 +8,7 @@ maintainers = ["Aobo Shi <shiaobo8@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/python-gino/gino-starlette"
 repository = "https://github.com/python-gino/gino-starlette"
-documentation = "https://python-gino.readthedocs.io/"
+documentation = "https://python-gino.org/docs/"
 keywords = ["sqlalchemy", "python3", "starlette", "gino"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,7 +24,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.6"
 starlette = "^0.13.0"
-gino = { version = "^1.0.0rc2", allow-prereleases = true }
+gino = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
