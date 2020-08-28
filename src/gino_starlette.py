@@ -11,7 +11,7 @@ from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.types import Receive, Scope, Send
 
-logger = logging.getLogger("gino.ext.starlette")
+logger = logging.getLogger("gino_starlette")
 
 
 class StarletteModelMixin:
@@ -92,7 +92,7 @@ class Gino(_Gino):
     The common usage looks like this::
 
         from starlette.applications import Starlette
-        from gino.ext.starlette import Gino
+        from gino_starlette import Gino
 
         app = Starlette()
         db = Gino(app, **kwargs)
