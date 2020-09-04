@@ -31,7 +31,7 @@ black = "^19.10b0"
 
 # tests
 pytest = "^5.3.2"
-pytest-asyncio = "^0.10.0"
+pytest-asyncio = "^0.14.0"
 pytest-cov = "^2.8.1"
 pytest-mock = "^1.13.0"
 pytest-virtualenv = "^1.7.0"
