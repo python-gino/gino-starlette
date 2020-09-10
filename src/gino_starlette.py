@@ -74,12 +74,17 @@ class _Middleware:
         self, scope: Scope, receive: Receive, send: Send
     ) -> None:
         if scope["type"] == "http" and self._conn_for_req:
-            scope["connection"] = await self.db.acquire(lazy=True)
+            conn = await self.db.acquire(lazy=True)
+
+            if "connections" not in scope:
+                scope["connections"] = []
+            scope["connections"].append(conn)
+
             try:
                 await self.app(scope, receive, send)
             finally:
-                conn = scope.pop("connection", None)
-                if conn is not None:
+                conns = scope.pop("connections", [])
+                for conn in conns:
                     await conn.release()
             return
 
@@ -123,14 +128,17 @@ class Gino(_Gino):
       like ``asyncpg``. Unrecognized parameters will cause exceptions.
 
     If ``use_connection_for_request`` is set to be True, then a lazy connection
-    is available at ``request['connection']``. By default, a database
+    is available in ``request['connections']``. By default, a database
     connection is borrowed on the first query, shared in the same execution
     context, and returned to the pool on response. If you need to release the
     connection early in the middle to do some long-running tasks, you can
     simply do this::
 
-        await request['connection'].release(permanent=False)
+        await request['connections'][0].release(permanent=False)
 
+    Or iterate it if you have multiple databases like:
+
+        [await conn.release(permanent=False) for conn in request['connections']]
     """
 
     model_base_classes = _Gino.model_base_classes + (StarletteModelMixin,)
