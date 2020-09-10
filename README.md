@@ -48,11 +48,17 @@ The config includes:
 ## Lazy Connection
 
 If `use_connection_for_request` is set to be True, then a lazy connection is available
-at `request['connection']`. By default, a database connection is borrowed on the first
+at `request['connections']`. By default, a database connection is borrowed on the first
 query, shared in the same execution context, and returned to the pool on response.
 If you need to release the connection early in the middle to do some long-running tasks,
 you can simply do this:
 
 ```python
-await request['connection'].release(permanent=False)
+await request['connections'][0].release(permanent=False)
+```
+
+Or iterate it if you have multiple databases like:
+
+```python
+[await conn.release(permanent=False) for conn in request['connections']]
 ```
