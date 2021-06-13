@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gino-starlette"
-version = "0.1.1"
+version = "0.1.2"
 description = "An extension for GINO to integrate with Starlette"
 license = "BSD-3-Clause"
 authors = ["Tony Wang <wwwjfy@gmail.com>"]
@@ -23,7 +23,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-starlette = "^0.13.0"
+starlette = "^0.13.0 || ^0.14.0"
 gino = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
