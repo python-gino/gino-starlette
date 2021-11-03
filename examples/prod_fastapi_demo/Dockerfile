@@ -1,7 +1,7 @@
 FROM python:3.8-alpine as base
 
 FROM base as builder
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev make postgresql-dev
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev make postgresql-dev rustup && rustup-init -y
 RUN pip install poetry==1.0.3
 COPY . /src/
 WORKDIR /src
