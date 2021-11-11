@@ -22,20 +22,20 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-starlette = "^0.13.0 || ^0.14.0"
+python = "^3.6.2"
+starlette = "^0.16"
 gino = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
-black = "^19.10b0"
+black = "^21.9b0"
 
 # tests
-pytest = "^5.3.2"
-pytest-asyncio = "^0.10.0"
-pytest-cov = "^2.8.1"
-pytest-mock = "^1.13.0"
+pytest = "^6.2.0"
+pytest-asyncio = "^0.15.0"
+pytest-cov = "^3.0.0"
+pytest-mock = "^3.6.0"
 pytest-virtualenv = "^1.7.0"
-requests = "^2.24.0"
+requests = "^2.26.0"
 
 [tool.poetry.plugins."gino.extensions"]
 "starlette" = "gino_starlette"

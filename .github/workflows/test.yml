@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8' ]
-        postgres-version: [ '9.6', '12.1' ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
     services:
       postgres:
-        image: fantix/postgres-ssl:${{ matrix.postgres-version }}
+        image: fantix/postgres-ssl:13.1
         env:
           POSTGRES_USER: gino
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
         - 5432:5432
         # needed because the postgres container does not provide a healthcheck
@@ -51,11 +51,10 @@ jobs:
       run: |
         $HOME/.poetry/bin/poetry run pytest --cov=src --cov=examples --cov-fail-under=95 --cov-report xml
     - name: Check code format with black
-      if: matrix.python-version >= '3.6'
       run: |
           $HOME/.poetry/bin/poetry run black --check src
     - name: Submit coverage report
-      if: matrix.python-version == '3.8' && matrix.postgres-version == '12.1' && github.ref == 'refs/heads/master'
+      if: matrix.python-version == '3.9' && github.ref == 'refs/heads/master'
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_TOKEN }}
       run: |
