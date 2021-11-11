@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gino-starlette"
-version = "0.1.2"
+version = "0.1.3"
 description = "An extension for GINO to integrate with Starlette"
 license = "BSD-3-Clause"
 authors = ["Tony Wang <wwwjfy@gmail.com>"]
