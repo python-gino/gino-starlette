@@ -2,7 +2,7 @@ FROM python:3.8-alpine as base
 
 FROM base as builder
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev libffi-dev openssl-dev make postgresql-dev
-RUN pip install poetry==1.0.3
+RUN pip install poetry==1.1.11
 COPY . /src/
 WORKDIR /src
 RUN python -m venv /env && . /env/bin/activate && poetry install
