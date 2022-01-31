@@ -23,7 +23,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
-starlette = "^0.16"
+starlette = "^0.17"
 gino = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
