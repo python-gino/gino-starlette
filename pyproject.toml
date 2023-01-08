@@ -23,19 +23,22 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.6.2,<4.0"  # fresh black requires at least 3.6.2 so we can't use ^3.6
-starlette = "^0.19"
-gino = "^1.0.1"
+starlette = ">=0.19,<1.0"  # caret behaviour on 0.x is to lock to 0.x.*
+gino = "^1.0"
 
 [tool.poetry.dev-dependencies]
-black = "^21.9b0"
+black = "^22.3"
 
 # tests
-pytest = "^6.2.0"
-pytest-asyncio = "^0.15.0"
-pytest-cov = "^3.0.0"
-pytest-mock = "^3.6.0"
-pytest-virtualenv = "^1.7.0"
-requests = "^2.26.0"
+pytest = [
+    { version = "^7.1", python="^3.7" },
+    { version = "^6.2", python="~3.6" }
+]
+pytest-asyncio = "^0.15"
+pytest-cov = "^3.0"
+pytest-mock = "^3.6"
+pytest-virtualenv = "^1.7"
+requests = "^2.26"
 
 [tool.poetry.plugins."gino.extensions"]
 "starlette" = "gino_starlette"
