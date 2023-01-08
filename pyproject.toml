@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = ">=3.6.2,<4.0"  # fresh black requires at least 3.6.2 so we can't use ^3.6
 starlette = "^0.19"
 gino = "^1.0.1"
 
