@@ -44,5 +44,5 @@ requests = "^2.26.0"
 line-length = 80
 
 [build-system]
-requires = ["poetry>=1.0.0"]
+requires = ["poetry>=1.2.0"]
 build-backend = "poetry.masonry.api"
