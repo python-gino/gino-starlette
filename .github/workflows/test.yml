@@ -88,7 +88,7 @@ jobs:
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          curl -sSL https://install.python-poetry.org | python
           $HOME/.local/bin/poetry install
           $HOME/.local/bin/poetry build
           $HOME/.local/bin/poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
