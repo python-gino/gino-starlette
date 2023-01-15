@@ -42,17 +42,17 @@ jobs:
           ${{ runner.os }}-${{ matrix.python-version }}-poetry-
     - name: Install Python dependencies
       run: |
-        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-        $HOME/.poetry/bin/poetry install
+        curl -sSL https://install.python-poetry.org | python
+        $HOME/.local/bin/poetry install
     - name: Test with pytest
       env:
         DB_HOST: localhost
         DB_USER: gino
       run: |
-        $HOME/.poetry/bin/poetry run pytest --cov=src --cov=examples --cov-fail-under=95 --cov-report xml
+        $HOME/.local/bin/poetry run pytest --cov=src --cov=examples --cov-fail-under=95 --cov-report xml
     - name: Check code format with black
       run: |
-          $HOME/.poetry/bin/poetry run black --check src
+          $HOME/.local/bin/poetry run black --check src
     - name: Submit coverage report
       if: matrix.python-version == '3.9' && github.ref == 'refs/heads/master'
       env:
@@ -89,6 +89,6 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-          $HOME/.poetry/bin/poetry install
-          $HOME/.poetry/bin/poetry build
-          $HOME/.poetry/bin/poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+          $HOME/.local/bin/poetry install
+          $HOME/.local/bin/poetry build
+          $HOME/.local/bin/poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
