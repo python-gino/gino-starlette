@@ -176,7 +176,7 @@ async def _app(**kwargs):
 
     @app.route("/")
     async def root(request):
-        conn = await request["connection"].get_raw_connection()
+        conn = await request["connections"][0].get_raw_connection()
         # noinspection PyProtectedMember
         assert (
             conn._holder._max_inactive_time == _MAX_INACTIVE_CONNECTION_LIFETIME
@@ -192,7 +192,7 @@ async def _app(**kwargs):
             return JSONResponse((await q.gino.first_or_404()).to_dict())
         elif method == "2":
             return JSONResponse(
-                (await request["connection"].first_or_404(q)).to_dict()
+                (await request["connections"][0].first_or_404(q)).to_dict()
             )
         elif method == "3":
             return JSONResponse((await db.bind.first_or_404(q)).to_dict())
@@ -207,7 +207,7 @@ async def _app(**kwargs):
         await u.query.gino.first_or_404()
         await db.first_or_404(u.query)
         await db.bind.first_or_404(u.query)
-        await request["connection"].first_or_404(u.query)
+        await request["connections"][0].first_or_404(u.query)
         return JSONResponse(u.to_dict())
 
     e = await gino.create_engine(PG_URL)
