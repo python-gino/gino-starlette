@@ -12,7 +12,7 @@ The common usage looks like this:
 
 ```python
 from starlette.applications import Starlette
-from gino.ext.starlette import Gino
+from gino_starlette import Gino
 
 app = Starlette()
 db = Gino(app, **kwargs)

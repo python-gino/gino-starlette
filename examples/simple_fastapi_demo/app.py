@@ -1,7 +1,7 @@
 import os
 
 from fastapi import FastAPI
-from gino.ext.starlette import Gino
+from gino_starlette import Gino
 from pydantic import BaseModel
 
 app = FastAPI()

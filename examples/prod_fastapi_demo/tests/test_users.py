@@ -8,7 +8,7 @@ def test_crud(client):
     r.raise_for_status()
 
     # retrieve
-    url = "/users/{}".format(r.json()['id'])
+    url = "/users/{}".format(r.json()["id"])
     assert client.get(url).json()["nickname"] == nickname
 
     # delete

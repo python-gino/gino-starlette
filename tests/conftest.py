@@ -11,7 +11,7 @@ import asyncpg
 import gino
 import pytest
 import requests
-from gino.ext.starlette import Gino
+from gino_starlette import Gino
 from requests.adapters import HTTPAdapter
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse

@@ -1,6 +1,6 @@
 import os
 
-from gino.ext.starlette import Gino
+from gino_starlette import Gino
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse
 
